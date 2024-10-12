@@ -6,83 +6,101 @@ const EmailCaptureLandingPage = () => {
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Submitted:', { firstName, email });
-    setSubmitted(true);
+    setError('');
+
+    try {
+      const response = await fetch('http://localhost:5000/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ firstName, email }),
+      });
+
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        const data = await response.json();
+        setError(data.error || 'An error occurred. Please try again.');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-100 to-white flex flex-col justify-center items-center px-4">
-      <Card className="w-full max-w-md">
+    <div className="landing-page">
+      <Card className="form-container">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-purple-800">
-            Join Our Community
-          </CardTitle>
+          <CardTitle>Join Our Community</CardTitle>
         </CardHeader>
         <CardContent>
           {!submitted ? (
             <>
-              <p className="text-center text-gray-600 mb-6">
+              <p className="text-center mb-6">
                 Get exclusive tips, updates, and offers delivered straight to your inbox!
               </p>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+              <form onSubmit={handleSubmit}>
+                <div className="input-group">
+                  <label htmlFor="firstName" className="block mb-1">
                     First Name
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                    <User className="input-icon" size={18} />
                     <Input
                       id="firstName"
                       type="text"
                       placeholder="Your first name"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="pl-10"
+                      className="input input-with-icon"
                       required
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <div className="input-group">
+                  <label htmlFor="email" className="block mb-1">
                     Email
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+                    <Mail className="input-icon" size={18} />
                     <Input
                       id="email"
                       type="email"
                       placeholder="Your email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
+                      className="input input-with-icon"
                       required
                     />
                   </div>
                 </div>
-                <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700">
+                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                <Button type="submit" className="button button-primary w-full">
                   Subscribe Now
                 </Button>
               </form>
-              <p className="text-xs text-center text-gray-500 mt-4">
+              <p className="privacy-text">
                 We respect your privacy. Unsubscribe at any time.
               </p>
             </>
           ) : (
-            <div className="text-center">
-              <Check className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            <div className="success-message">
+              <Check className="success-icon" />
               <h3 className="text-xl font-semibold mb-2">Thank You for Subscribing!</h3>
-              <p className="text-gray-600">
-                We've sent a confirmation email to {email}. Please check your inbox to complete the subscription process.
-              </p>
+                {/* <p>
+                  We've sent a confirmation email to {email}. Please check your inbox to complete the subscription process.
+                </p> */}
             </div>
           )}
         </CardContent>
       </Card>
       
-      <footer className="mt-8 text-center text-gray-500 text-sm">
+      <footer className="footer">
         © 2024 YourBrand. All rights reserved.
       </footer>
     </div>
